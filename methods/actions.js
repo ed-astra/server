@@ -15,9 +15,9 @@ const bcryptSalt = process.env.BCRYPT_SALT;
 var functions = {
 
 
-    authenticate: function (req, res) {
+    authenticatevonisha: function (req, res) {
         if (req.body.email.length >= 4 && req.body.password.length >= 8) {
-            User.findOne({
+            VonishaUser.findOne({
                 email: req.body.email,
             }, function (err, user) {
                 if (err) throw err
@@ -101,7 +101,7 @@ var functions = {
                 type: req.body.type,
             },);
 
-            var user = {
+            var tokenData = {
                 name: req.body.firstName,
                 email: req.body.email,
             }
@@ -117,7 +117,7 @@ var functions = {
                             res.json({ success: false, msg: 'Failed to save ' + err })
                         }
                         else {
-                            var token = jwt.encode(user, config.secret)
+                            var token = jwt.encode(tokenData, config.secret)
                             sendMail(req.body.firstName + " " + req.body.lastName, req.body.email, 0, token);
                             res.json({ success: true, msg: 'Succcessfully saved' })
                         }
@@ -141,6 +141,28 @@ var functions = {
             var decodedToken = jwt.decode(token, config.secret)
 
             User.findOne({
+                email: decodedToken.email,
+            }, function (err, user) {
+                if (err) throw err;
+
+                if (!user) {
+                    res.json({ success: false, msg: 'User not found' })
+                } else {
+                    return res.json({ success: true, msg: decodedToken.name })
+                }
+            })
+        } else {
+            return res.json({ success: false, msg: 'No Headders' })
+        }
+    },
+
+    validateVonishaToken: function (req, res) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            var token = req.headers.authorization.split(' ')[1]
+            var decodedToken = jwt.decode(token, config.secret)
+            console.log(decodedToken)
+
+            VonishaUser.findOne({
                 email: decodedToken.email,
             }, function (err, user) {
                 if (err) throw err;
@@ -198,6 +220,25 @@ var functions = {
                 { upsert: false },
             ).then((obj) => {
                 console.log('Updated: Password');
+                res.json({ success: true, msg: 'Successfully Updated' })
+            }).catch((err) => {
+                res.json({ success: false, msg: 'Error ' + err })
+            })
+        }
+    },
+
+    resetVonishaPassword: async function (req, res) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            var token = req.headers.authorization.split(' ')[1]
+            var decodedToken = jwt.decode(token, config.secret)
+
+            var hash = await bcrypt.hash(req.body.p, Number(bcryptSalt))
+            VonishaUser.updateOne(
+                { email: decodedToken.email },
+                { $set: { password: hash } },
+                { upsert: false },
+            ).then((obj) => {
+                console.log('Updated: Vonisha Password');
                 res.json({ success: true, msg: 'Successfully Updated' })
             }).catch((err) => {
                 res.json({ success: false, msg: 'Error ' + err })

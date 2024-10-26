@@ -15,8 +15,8 @@ router.get('/dashboard', (req, res) => {
 })
 
 // @ Authenticate user
-// POST /signin
-router.post('/signin', actions.authenticate)
+// POST /signin vonisha
+router.post('/signinvonisha', actions.authenticatevonisha)
 
 router.post('/addUser', actions.addUser)
 
@@ -29,6 +29,10 @@ router.get('/getinfo', actions.getinfo)
 // GET /validatetoken
 router.get('/validatetoken', actions.validateToken)
 
+// vonisha token validation
+// GET /validatevonishatoken
+router.get('/validatevonishatoken', actions.validateVonishaToken)
+
 // compare current passwords
 // POST /verifypassword
 router.post('/verifypassword', actions.matchPasswords)
@@ -36,6 +40,10 @@ router.post('/verifypassword', actions.matchPasswords)
 // reset user password
 // POST /
 router.post('/resetpassword', actions.resetPassword)
+
+// reset user password
+// POST /
+router.post('/resetvonishapassword', actions.resetVonishaPassword)
 
 router.post('/adduser', actions.addUser)
 
