@@ -3,6 +3,7 @@ var VonishaUser = require('../models/vonisha_user')
 var Venue = require('../models/venues')
 var Bookings = require('../models/bookings')
 var BookingDetails = require('../models/booking_details')
+var Students = require('../models/students.js')
 
 var jwt = require('jwt-simple')
 var config = require('../config/dbConfig')
@@ -135,6 +136,56 @@ var functions = {
 
     },
 
+    addVonishaStudent: function (req, res) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            var token = req.headers.authorization.split(' ')[1]
+            var decodedToken = jwt.decode(token, config.secret)
+
+            var newUser = Students({
+                class: req.body.class,
+                data: req.body.data,
+            },);
+
+            Students.findOne({
+                class: req.body.class,
+            }, function (err, user) {
+                if (err) throw err;
+
+                if (!user) {
+                    newUser.save(function (err) {
+                        if (err) {
+                            res.json({ success: false, msg: 'Failed to save ' + err })
+                        }
+                        else {
+                            res.json({ success: true, msg: 'Succcessfully saved' })
+                        }
+                    })
+                } else {
+
+                    var data = user.data
+                    data.push(req.body.data)
+
+                    Students.updateOne(
+
+                        { class: user.class },
+                        { $set: { data: data } },
+                        { upsert: false },
+                    ).then((obj) => {
+                        console.log('Added Student');
+                        res.json({ success: true, msg: 'Successfully Updated' })
+                    }).catch((err) => {
+                        res.json({ success: false, msg: 'Error ' + err })
+                    })
+
+                }
+            })
+
+        } else {
+            return res.json({ success: false, msg: 'No Headders' })
+        }
+
+    },
+
     validateToken: function (req, res) {
         if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
             var token = req.headers.authorization.split(' ')[1]
@@ -178,12 +229,12 @@ var functions = {
         }
     },
 
-    getinfo: function (req, res) {
+    getvonishainfo: function (req, res) {
         if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
             var token = req.headers.authorization.split(' ')[1]
             var decodedToken = jwt.decode(token, config.secret)
 
-            User.findOne({
+            VonishaUser.findOne({
                 email: decodedToken.email,
             }, function (err, user) {
                 if (err) throw err;
@@ -769,7 +820,7 @@ var functions = {
                 } else {
                     VonishaUser.find(function (err, user) {
                         var data = [];
-                        var index = 0;
+                        var index = 2;
                         while (index < user.length) {
                             var userData = user[index].data[0]
                             var dataPush = {
@@ -791,6 +842,112 @@ var functions = {
             return res.json({ success: false, msg: 'No Headders' })
         }
     },
+    getVonishaUserNames: function (req, res) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            var token = req.headers.authorization.split(' ')[1]
+            var decodedToken = jwt.decode(token, config.secret)
+
+            VonishaUser.findOne({
+                email: decodedToken.email,
+            }, function (err, user) {
+                if (err) throw err;
+
+                if (!user) {
+                    res.json({ success: false, msg: 'User not found' })
+                } else {
+                    VonishaUser.find(function (err, user) {
+                        var data = [];
+                        var index = 2;
+                        while (index < user.length) {
+                            var userData = user[index].data[0]
+                            var dataPush = {
+                                "role": userData["role"],
+                            }
+                            data.push({
+                                "name": user[index].firstName + " " + user[index].lastName,
+                                "email": user[index].email,
+                                "number": user[index].number,
+                                "data": userData,
+                            },)
+                            ++index
+                        }
+                        return res.json({ success: true, data: data })
+                    })
+                }
+            })
+        } else {
+            return res.json({ success: false, msg: 'No Headders' })
+        }
+    },
+    getVonishaUserNames: function (req, res) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            var token = req.headers.authorization.split(' ')[1]
+            var decodedToken = jwt.decode(token, config.secret)
+
+            VonishaUser.findOne({
+                email: decodedToken.email,
+            }, function (err, user) {
+                if (err) throw err;
+
+                if (!user) {
+                    res.json({ success: false, msg: 'User not found' })
+                } else {
+                    VonishaUser.find(function (err, user) {
+                        var data = [];
+                        var index = 2;
+                        while (index < user.length) {
+                            var userData = user[index].data[0]
+                            var dataPush = {
+                                "role": userData["role"],
+                            }
+                            data.push({
+                                "name": user[index].firstName + " " + user[index].lastName,
+                                "email": user[index].email,
+                                "number": user[index].number,
+                                "data": userData,
+                            },)
+                            ++index
+                        }
+                        return res.json({ success: true, data: data })
+                    })
+                }
+            })
+        } else {
+            return res.json({ success: false, msg: 'No Headders' })
+        }
+    },
+    getVonishaStudentNames: function (req, res) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            var token = req.headers.authorization.split(' ')[1]
+            var decodedToken = jwt.decode(token, config.secret)
+
+            VonishaUser.findOne({
+                email: decodedToken.email,
+            }, function (err, user) {
+                if (err) throw err;
+
+                if (!user) {
+                    res.json({ success: false, msg: 'User not found' })
+                } else {
+                    Students.findOne({
+                        class: req.body.class,
+                    }, function (err, user) {
+                        if (!user) {
+                            return res.json({ success: true, data: [] })
+
+                        } else {
+                            var data = user.data;
+                            return res.json({ success: true, data: data })
+                        }
+
+                    })
+                }
+            })
+        } else {
+            return res.json({ success: false, msg: 'No Headders' })
+        }
+    },
+
 
 }
 

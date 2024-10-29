@@ -20,10 +20,13 @@ router.post('/signinvonisha', actions.authenticatevonisha)
 
 router.post('/addUser', actions.addUser)
 
+router.post('/addvonishastudent', actions.addVonishaStudent)
+
+
 
 // get user info
 // GET /getinfo
-router.get('/getinfo', actions.getinfo)
+router.get('/getinfo', actions.getvonishainfo)
 
 // token validation
 // GET /validatetoken
@@ -69,6 +72,8 @@ router.get('/deletebooking', actions.deleteBooking)
 router.get('/getuserdetails', actions.getUserNames)
 
 router.get('/getvonishauserdetails', actions.getVonishaUserNames)
+
+router.post('/getvonishastudents', actions.getVonishaStudentNames)
 
 
 
