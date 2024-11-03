@@ -4,6 +4,10 @@ var Venue = require('../models/venues')
 var Bookings = require('../models/bookings')
 var BookingDetails = require('../models/booking_details')
 var Students = require('../models/students.js')
+var AttendanceData = require('../models/vonisha_attendance.js')
+var Enquiries = require('../models/vonisha_enquiry.js')
+var Calender = require('../models/vonisha_calender.js')
+
 
 var jwt = require('jwt-simple')
 var config = require('../config/dbConfig')
@@ -948,8 +952,298 @@ var functions = {
         }
     },
 
+    getVonishaAttendance: function (req, res) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            var token = req.headers.authorization.split(' ')[1]
+            var decodedToken = jwt.decode(token, config.secret)
+
+            VonishaUser.findOne({
+                email: decodedToken.email,
+            }, function (err, user) {
+                if (err) throw err;
+
+                if (!user) {
+                    res.json({ success: false, msg: 'User not found' })
+                } else {
+                    AttendanceData.findOne({
+                        heading: "staff",
+                    }, function (err, data) {
+                        if (!data) {
+                            return res.json({ success: true, data: [] })
+
+                        } else {
+                            var data = data.data;
+                            console.log(data);
+                            return res.json({ success: true, data: data })
+                        }
+
+                    })
+                }
+            })
+        } else {
+            return res.json({ success: false, msg: 'No Headders' })
+        }
+    },
+
+    updateVonishaAttendance: function (req, res) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            var token = req.headers.authorization.split(' ')[1]
+            var decodedToken = jwt.decode(token, config.secret)
+
+            VonishaUser.findOne({
+                email: decodedToken.email,
+            }, function (err, user) {
+                if (err) throw err;
+
+                if (!user) {
+                    res.json({ success: false, msg: 'User not found' })
+                } else {
+                    AttendanceData.updateOne(
+
+                        { heading: "staff" },
+                        { $set: { data: req.body.data } },
+                        { upsert: false },
+                    ).then((obj) => {
+                        console.log('Updated Attendance');
+                        res.json({ success: true, msg: 'Successfully Updated' })
+                    }).catch((err) => {
+                        res.json({ success: false, msg: 'Error ' + err })
+                    })
+                }
+            })
+        } else {
+            return res.json({ success: false, msg: 'No Headders' })
+        }
+    },
+
+
+    addUsersatt: function (req, res) {
+
+
+        VonishaUser.find(function (err, user) {
+            var data = [];
+            var index = 2;
+            var att = [
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+                " ",
+            ]
+            while (index < user.length) {
+
+                data.push({
+                    "name": user[index].firstName + " " + user[index].lastName,
+                    "attendance": att,
+
+                },)
+                ++index
+            }
+
+            var newatt = AttendanceData({
+                heading: "staff",
+                data: data,
+
+            },);
+
+            newatt.save(function (err) {
+                if (err) {
+                    res.json({ success: false, msg: 'Failed to save ' + err })
+                }
+                else {
+                    console.log("saved")
+                }
+            })
+        })
+
+    },
+
+    addEnquiries: function (req, res) {
+
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            var token = req.headers.authorization.split(' ')[1]
+            var decodedToken = jwt.decode(token, config.secret)
+
+            User.findOne({
+                email: decodedToken.email,
+            }, function (err, user) {
+                if (err) throw err;
+
+                if (!user) {
+                    res.json({ success: false, msg: 'User not found' })
+                } else {
+                    var newEnquiry = Enquiries({
+                        name: req.body.name,
+                        number: req.body.number,
+                        date: req.body.date,
+                        remarks: req.body.remarks,
+                    },);
+
+                    newEnquiry.save(function (err) {
+                        if (err) {
+                            res.json({ success: false, msg: 'Failed to save ' + err })
+                        }
+                        else {
+                            res.json({ success: true, msg: 'Succcessfully saved' })
+                            console.log("saved")
+                        }
+                    })
+                }
+            })
+        } else {
+            return res.json({ success: false, msg: 'No Headders' })
+        }
+
+    },
+
+    getVonishaEnquiries: function (req, res) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            var token = req.headers.authorization.split(' ')[1]
+            var decodedToken = jwt.decode(token, config.secret)
+
+            VonishaUser.findOne({
+                email: decodedToken.email,
+            }, function (err, user) {
+                if (err) throw err;
+
+                if (!user) {
+                    res.json({ success: false, msg: 'User not found' })
+                } else {
+                    Enquiries.find({
+                    }, function (err, enquiry) {
+                        if (!enquiry) {
+                            return res.json({ success: true, data: "nill" })
+                        } else {
+
+                            return res.json({ success: true, data: enquiry })
+                        }
+
+                    })
+                }
+            })
+        } else {
+            return res.json({ success: false, msg: 'No Headders' })
+        }
+    },
+
+    updateVonishaCalender: function (req, res) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            var token = req.headers.authorization.split(' ')[1]
+            var decodedToken = jwt.decode(token, config.secret)
+
+            VonishaUser.findOne({
+                email: decodedToken.email,
+            }, function (err, user) {
+                if (err) throw err;
+
+                if (!user) {
+                    res.json({ success: false, msg: 'User not found' })
+                } else {
+
+                    Calender.findOne({
+                        month: req.body.month,
+                    }, function (err, events) {
+                        if (err) throw err;
+
+                        if (!events) {
+                            var newEvent = Calender({
+                                month: req.body.month,
+                                data: req.body.data,
+                            },);
+
+                            newEvent.save(function (err) {
+                                if (err) {
+                                    res.json({ success: false, msg: 'Failed to save ' + err })
+                                }
+                                else {
+                                    res.json({ success: true, msg: 'Succcessfully saved' })
+                                    console.log("saved")
+                                }
+                            })
+
+                        } else {
+                            var data = events.data;
+                            data.push(req.body.data)
+
+                            Calender.updateOne(
+                                { month: req.body.month },
+                                { $set: { data: data } },
+                                { upsert: false },
+                            ).then((obj) => {
+                                console.log('Updated Events');
+                                res.json({ success: true, msg: 'Successfully Updated' })
+                            }).catch((err) => {
+                                res.json({ success: false, msg: 'Error ' + err })
+                            })
+                        }
+                    })
+                }
+            })
+        } else {
+            return res.json({ success: false, msg: 'No Headders' })
+        }
+    },
+
+    getVonishaCalender: function (req, res) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            var token = req.headers.authorization.split(' ')[1]
+            var decodedToken = jwt.decode(token, config.secret)
+
+            VonishaUser.findOne({
+                email: decodedToken.email,
+            }, function (err, user) {
+                if (err) throw err;
+
+                if (!user) {
+                    res.json({ success: false, msg: 'User not found' })
+                } else {
+                    Calender.find({
+                    }, function (err, enquiry) {
+                        if (!enquiry) {
+                            return res.json({ success: true, data: "nill" })
+                        } else {
+
+                            return res.json({ success: true, data: enquiry })
+                        }
+
+                    })
+                }
+            })
+        } else {
+            return res.json({ success: false, msg: 'No Headders' })
+        }
+    },
 
 }
 
 
 module.exports = functions
+
+// functions.addUsersatt()
+

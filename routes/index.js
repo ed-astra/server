@@ -75,6 +75,22 @@ router.get('/getvonishauserdetails', actions.getVonishaUserNames)
 
 router.post('/getvonishastudents', actions.getVonishaStudentNames)
 
+router.get('/getstaffattendance', actions.getVonishaAttendance)
+
+router.post('/addvonishaenquiry', actions.addEnquiries)
+
+router.get('/getvonishaenquiry', actions.getVonishaEnquiries)
+
+router.post('/updatestaffattendance', actions.updateVonishaAttendance)
+
+router.post('/updatevonishaCalender', actions.updateVonishaCalender)
+
+router.get('/getvonishacalender', actions.getVonishaCalender)
+
+
+
+
+
 
 
 module.exports = router
